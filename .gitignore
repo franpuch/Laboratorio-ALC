@@ -1,0 +1,39 @@
+# DIRECTORIOS DE ENTORNO VIRTUAL. 
+
+# Ignorar el directorio del entorno virtual de Anaconda.
+envs/
+
+# Ignorar el directorio de entornos virtuales en general.
+.venv/
+venv/
+env/
+
+
+# ARCHIVOS DE CACHÉ. 
+
+# Archivos de caché de Python.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de caché de Visual Studio Code.
+.vscode/
+
+
+# ARCHIVOS DE JUPYTER NOTEBOOK. 
+.ipynb_checkpoints/
+
+
+# ARCHIVOS DE SPYDER. 
+.spyderproject/
+.spyderworkspace/
+.spyder/
+
+
+# ARCHIVOS ESPECÍFICOS DE SISTEMAS OPERATIVOS. 
+.DS_Store
+Thumbs.db
+
+
+# Fin.
