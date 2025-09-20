@@ -1,5 +1,5 @@
 """
-Laboratorio 2: Transformaciones Lineales
+Laboratorio 3: Norma y Numero de Condicion
 
 Funciones del Módulo ALC.
 """
