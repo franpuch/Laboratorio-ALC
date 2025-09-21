@@ -34,7 +34,9 @@ Funciones:
     - Labo 03 -> normaMatMC() 
     - Labo 03 -> normaExacta() 
     - Labo 03 -> condMC() 
-    - Labo 03 -> condExacto()
+    - Labo 03 -> condExacto() 
+    
+    - Labo 04 -> 
     
 """
 
@@ -529,7 +531,9 @@ def condExacta(A:np.ndarray, p:int | str) -> float | None :
     return np.float64(norma_A * norma_A_inv) 
 
 
-# ----------------------------------- Laboratorio 04 -------------------------------------------------------- #
+# ----------------------------------- Laboratorio 04 -------------------------------------------------------- # 
+
+# ----------------------------------- Laboratorio 05 -------------------------------------------------------- #
 
 
 # Fin. 

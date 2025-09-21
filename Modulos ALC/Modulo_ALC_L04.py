@@ -10,17 +10,18 @@ Funciones del Módulo ALC.
 # Librerias y Herramientas.
 
 import numpy as np 
+from Modulo_ALC import esSimetrica
 
 
 # %% 
 
 def calculaLU(A:np.ndarray) :
     
-    A = np.array(A, dtype=np.float64)
+    A = np.array(A, dtype = np.float64)
     filas = A.shape[0]
     
     # Inicializamos L como identidad, U como copia de A.
-    L = np.eye(filas, dtype=np.float64)
+    L = np.eye(filas, dtype = np.float64)
     U = A.copy().astype(np.float64)
     nops = 0
     
@@ -44,10 +45,10 @@ Versión para ver cómo trabaja iteración a iteración.
 """
 
 def calculaLU_B(A:np.ndarray, debug:bool = True) :
-    A = np.array(A, dtype=np.float64)
+    A = np.array(A, dtype = np.float64)
     n = A.shape[0]
     
-    L = np.eye(n, dtype=np.float64)
+    L = np.eye(n, dtype = np.float64)
     U = A.copy().astype(np.float64)
     nops = 0
     
@@ -98,10 +99,10 @@ def calculaLU_B(A:np.ndarray, debug:bool = True) :
 
 def res_tri(L:np.ndarray, b:np.ndarray, inferior:bool = True) : 
     
-    L = np.array(L, dtype=np.float64) 
-    b = np.array(b, dtype=np.float64) 
+    L = np.array(L, dtype = np.float64) 
+    b = np.array(b, dtype = np.float64) 
     filas = L.shape[0] 
-    res = np.zeros(filas, dtype=np.float64) 
+    res = np.zeros(filas, dtype = np.float64) 
     
     if (inferior) :
         for i in range(0, filas) :
@@ -129,10 +130,10 @@ Versión para ver cómo trabaja iteración a iteración.
 
 def res_tri_B(L:np.ndarray, b:np.ndarray, inferior:bool = True, debug:bool = True) :
     
-    L = np.array(L, dtype=np.float64)
-    b = np.array(b, dtype=np.float64)
+    L = np.array(L, dtype = np.float64)
+    b = np.array(b, dtype = np.float64)
     filas = L.shape[0]
-    res = np.zeros(filas, dtype=np.float64)
+    res = np.zeros(filas, dtype = np.float64)
     
     if (debug) :
         print("\nResolviendo sistema triangular")
@@ -179,7 +180,7 @@ def res_tri_B(L:np.ndarray, b:np.ndarray, inferior:bool = True, debug:bool = Tru
 
 def inversa(A:np.ndarray) : 
     
-    A = np.array(A, dtype=np.float64)
+    A = np.array(A, dtype = np.float64)
     filas = A.shape[0]
     
     L, U, nops = calculaLU_B(A) 
@@ -188,8 +189,8 @@ def inversa(A:np.ndarray) :
         print("La matriz es Singular, no tiene Inversa.")
         return None 
     
-    identidad:np.ndarray = np.eye(filas, dtype=np.float64)
-    res = np.zeros((filas, filas), dtype=np.float64)
+    identidad:np.ndarray = np.eye(filas, dtype = np.float64)
+    res = np.zeros((filas, filas), dtype = np.float64)
     
     for i in range(0, filas) :
         e = identidad[:, i]   # Tomo la columna 'i'.
@@ -200,6 +201,60 @@ def inversa(A:np.ndarray) :
         res[:, i] = x   # Reemplazo la columna de 'res' por el vector columna que obtuve de resolver los sistemas triagulares.
     
     return res 
+
+
+# %% 
+
+def calculaLDV(A:np.ndarray) :
+    
+    A = np.array(A, dtype = np.float64)
+    filas = A.shape[0]
+
+    # Factorizo A = L U
+    L, U, nops = calculaLU(A)
+    
+    if ((L is None) or (U is None)) :
+        return None, None, None, 0
+
+    # D = diagonal con los pivotes de U.
+    D = np.zeros((filas, filas), dtype = np.float64)
+    for i in range(0, filas) :
+        D[i, i] = U[i, i]
+
+    # V = U normalizado (cada fila dividida por su pivote).
+    V = np.zeros_like(U, dtype = np.float64)
+    for i in range(filas):
+        if (abs(D[i, i]) == 0) :  # Pivote Nulo -> No Factorizable. 
+            return None, None, None, 0
+        V[i, :] = U[i, :] / D[i, i]
+
+    return L, D, V, nops 
+
+
+# %% 
+
+def esSDP(A:np.ndarray, atol:float = 1e-8) -> bool : 
+    
+    A = np.array(A, dtype = np.float64)
+
+    # Chequeo simetría.
+    if (not esSimetrica(A)) :
+        print("La matriz de entrada no es simétrica.")
+        return False
+
+    # Hago la Factorización LDV.
+    L, D, V, nops = calculaLDV(A)
+    if ((L is None) or (D is None) or (V is None)) : 
+        print("La matriz de entrada no tiene descomposición A = L D V.")
+        return False
+
+    # Reviso que los elementos de la diagonal de D sean positivos.
+    for i in range(0, D.shape[0]) :
+        if (D[i, i] <= atol) :
+            print("La matriz de entrada NO es Simétrica Definida Positiva.")
+            return False
+
+    return True
 
 
 # %% 
@@ -277,6 +332,57 @@ A = np.array([[1,2,3],[4,5,6],[7,8,9]])
 assert(inversa(A) is None) 
 
 print("Todos los test de 'inversa()' pasados correctamente.") 
+
+
+# %% 
+
+# Test -> 'calculaLDV()' 
+
+L0 = np.array([[1,0,0],[1,1.,0],[1,1,1]])
+D0 = np.diag([1,2,3])
+V0 = np.array([[1,1,1],[0,1,1],[0,0,1]])
+A =  L0 @ D0  @ V0
+L,D,V,nops = calculaLDV(A)
+assert(np.allclose(L,L0))
+assert(np.allclose(D,D0))
+assert(np.allclose(V,V0))
+
+L0 = np.array([[1,0,0],[1,1.001,0],[1,1,1]])
+D0 = np.diag([3,2,1])
+V0 = np.array([[1,1,1],[0,1,1],[0,0,1.001]])
+A =  L0 @ D0  @ V0
+L,D,V,nops = calculaLDV(A)
+assert(np.allclose(L,L0,1e-3))
+assert(np.allclose(D,D0,1e-3))
+assert(np.allclose(V,V0,1e-3))
+
+print("Todos los test de 'calculaLDV()' pasados correctamente.") 
+
+
+# %% 
+
+# Test -> 'esSDP()' 
+
+L0 = np.array([[1,0,0],[1,1,0],[1,1,1]])
+D0 = np.diag([1,1,1])
+A = L0 @ D0 @ L0.T
+assert(esSDP(A))
+
+D0 = np.diag([1,-1,1])
+A = L0 @ D0 @ L0.T
+assert(not esSDP(A))
+
+D0 = np.diag([1,1,1e-16])
+A = L0 @ D0 @ L0.T
+assert(not esSDP(A))
+
+L0 = np.array([[1,0,0],[1,1,0],[1,1,1]])
+D0 = np.diag([1,1,1])
+V0 = np.array([[1,0,0],[1,1,0],[1,1+1e-10,1]]).T
+A = L0 @ D0 @ V0
+assert(not esSDP(A))
+
+print("Todos los test de 'esSDP()' pasados correctamente.")
 
 
 # %% 
