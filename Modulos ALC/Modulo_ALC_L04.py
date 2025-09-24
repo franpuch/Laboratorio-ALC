@@ -34,8 +34,10 @@ def calculaLU(A:np.ndarray) :
             nops += 1  # División.
             
             for j in range(k, filas) :
-                U[i, j] = U[i, j] - L[i, k] * U[k, j]
-                nops += 2  # Multiplicación + Resta
+                U[i, j] = U[i, j] - L[i, k] * U[k, j] 
+                
+                if (i != j) : 
+                    nops += 2  # Multiplicación + Resta
     
     return L, U, nops
 
@@ -183,9 +185,9 @@ def inversa(A:np.ndarray) :
     A = np.array(A, dtype = np.float64)
     filas = A.shape[0]
     
-    L, U, nops = calculaLU_B(A) 
+    L, U, nops = calculaLU(A) 
     
-    if (L is None) : 
+    if ((L is None) or (U[filas - 1, filas - 1] == 0)) : 
         print("La matriz es Singular, no tiene Inversa.")
         return None 
     
