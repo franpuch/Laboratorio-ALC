@@ -43,6 +43,24 @@ def multiplicar_matrices(A:np.ndarray, B:np.ndarray) -> np.ndarray :
 
 
 # %% 
+# Producto interno entre vectores. 
+
+def producto_interno(x1:np.ndarray, x2:np.ndarray) -> float : 
+    
+    if (len(x1) != len(x2)) : 
+        raise ValueError("Las dimensiones de los vectores no son compatibles para el producto inetrno (no son iguales).")
+    
+    long_vectores:int = len(x1) 
+    
+    res:float = 0 
+    
+    for i in range(0, long_vectores) : 
+        res += x1[i] * x2[i] 
+        
+    return res 
+
+
+# %% 
 # TEST PARA multiplicar_matrices().
 
 # Caso 1: Identidad (no cambia la matriz).
