@@ -240,19 +240,17 @@ Quiero hacer una función robusta que, venga como venga 'x' (como vector fila, c
 realice el producto y retorne un vector aplanado (vector fila digamos).
 '''
 
-def calcularAx(matriz_A:np.ndarray , matriz_x:np.ndarray) -> np.ndarray :
+def calcularAx(matriz_A:np.ndarray , matriz_x:np.ndarray, vector_fila:bool = False) -> np.ndarray :
     
-    # Obtengo los tamaños que necesito.
     nro_filas, nro_columnas = np.shape(matriz_A) 
     
-    # Normalizo 'x' para que siempre sea un vector 1D de largo 'm'.
     if (len(np.shape(matriz_x)) == 2) :
         filas_x, cols_x = np.shape(matriz_x)
         
-        if (cols_x == 1) :   # Vector Columna.
+        if (cols_x == 1) : 
             matriz_x = np.array([matriz_x[i][0] for i in range(filas_x)])
             
-        elif (filas_x == 1) :   # Vector Fila.
+        elif (filas_x == 1) : 
             matriz_x = np.array([matriz_x[0][j] for j in range(cols_x)])
             
         else:
@@ -260,11 +258,8 @@ def calcularAx(matriz_A:np.ndarray , matriz_x:np.ndarray) -> np.ndarray :
             
     elif (len(np.shape(matriz_x)) != 1) :
         raise ValueError("La 'matriz_x' no es un vector válido.")
-        
-    # Ahora la 'matriz_x' es siempre 1D de largo 'm'
     
-    # Armo el resultado como un vector columna de ceros.
-    res:np.ndarray = np.array([[0] for _ in range(0, nro_filas)]) 
+    res:np.ndarray = np.zeros((nro_filas, 1), dtype = np.float64)
     
     for i in range(0, nro_filas) :
         res_parcial: float = 0 
@@ -272,7 +267,12 @@ def calcularAx(matriz_A:np.ndarray , matriz_x:np.ndarray) -> np.ndarray :
         for j in range(0, nro_columnas) :
             res_parcial += matriz_A[i][j] * matriz_x[j]
         
-        res[i] = res_parcial 
+        res[i, 0] = res_parcial 
+    
+    # Fran del Futuro añade esta nueva opción que retorna el resultado en forma de vector fila (porque en el futuro no me sirve
+    # que esta función me devuelva el resultado como vector columna).
+    if (vector_fila == True) :
+        res = np.array([res[i][0] for i in range(len(res))], dtype=np.float64) if len(np.shape(res))==2 else np.array([res[i] for i in range(len(res))], dtype=np.float64)
     
     return res 
 

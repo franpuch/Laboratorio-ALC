@@ -133,7 +133,7 @@ esperado = np.array([[5.5, 4.5],
                      [11.5, 8.5]], dtype=np.float64)
 assert np.allclose(resultado, esperado)
 
-print("Todos los tests pasaron correctamente.")
+# print("Todos los tests pasaron correctamente.")
 
 
 # %% 

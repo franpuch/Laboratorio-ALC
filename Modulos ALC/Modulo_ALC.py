@@ -148,7 +148,7 @@ def esSimetrica(matriz:np.ndarray) -> bool :
     return True
 
 
-def calcularAx(matriz_A:np.ndarray , matriz_x:np.ndarray) -> np.ndarray :
+def calcularAx(matriz_A:np.ndarray , matriz_x:np.ndarray, vector_fila:bool = False) -> np.ndarray :
     
     nro_filas, nro_columnas = np.shape(matriz_A) 
     
@@ -167,7 +167,7 @@ def calcularAx(matriz_A:np.ndarray , matriz_x:np.ndarray) -> np.ndarray :
     elif (len(np.shape(matriz_x)) != 1) :
         raise ValueError("La 'matriz_x' no es un vector válido.")
     
-    res:np.ndarray = np.array([[0] for _ in range(0, nro_filas)]) 
+    res:np.ndarray = np.zeros((nro_filas, 1), dtype = np.float64)
     
     for i in range(0, nro_filas) :
         res_parcial: float = 0 
@@ -175,7 +175,10 @@ def calcularAx(matriz_A:np.ndarray , matriz_x:np.ndarray) -> np.ndarray :
         for j in range(0, nro_columnas) :
             res_parcial += matriz_A[i][j] * matriz_x[j]
         
-        res[i] = res_parcial 
+        res[i, 0] = res_parcial 
+        
+    if (vector_fila == True) :
+        res = np.array([res[i][0] for i in range(len(res))], dtype=np.float64) if len(np.shape(res))==2 else np.array([res[i] for i in range(len(res))], dtype=np.float64)
     
     return res 
 
