@@ -18,7 +18,7 @@ def multiplicar_matrices(A:np.ndarray, B:np.ndarray) -> np.ndarray :
     
     # Parseo a arrays de numpy con dtype float64 (por las dudas que venga en otro formato).
     A = np.array(A, dtype=np.float64)
-    B = np.array(B, dtype=np.float64)
+    B = np.array(B, dtype=np.float64) 
     
     # Obtengo dimensiones.
     filas_A, cols_A = A.shape

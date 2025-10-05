@@ -10,8 +10,9 @@ Funciones del Módulo ALC.
 # Librerias y Herramientas.
 
 import numpy as np 
-from Modulo_ALC import calcularAx, norma 
-from Funciones_Varias import producto_interno
+from Modulo_ALC import calcularAx, norma, traspuesta, esCuadrada, esSimetrica
+from Funciones_Varias import producto_interno, multiplicar_matrices
+from Modulo_ALC import normaExacta   # Esta la utilizan en los Test.
 
 
 # %% 
@@ -69,8 +70,64 @@ def metpot2k(A:np.ndarray, tol:float = 1e-15, K:int = 1000) :
 
 # %% 
 
+'''
+Hay que corregirla. Hay algo que está funcionando mal.
+'''
+
 def diagRH(A:np.ndarray, tol:float = 1e-15, K = 1000) : 
-    return None
+    
+    # Chequeo si es cuadrada y simétrica.
+    if ((not esCuadrada(A)) or (not esSimetrica(A))) :
+        return None, None
+    
+    n = np.shape(A)[0] 
+    
+    # Es una función recursiva, necesito un Caso Base.
+    if (n == 1) :
+        return np.eye(1), np.array([[A[0, 0]]], dtype=np.float64)
+    
+    v1, l1, _ = metpot2k(A, tol, K) 
+
+    # A 'v1' le resto el vector canónico 'e1'.
+    e1 = np.zeros_like(v1)
+    e1[0] = 1.0
+    v_aux = e1 - v1 
+    
+    denom = producto_interno(v_aux, v_aux) 
+    
+    if (denom < tol) :  # Evita división por cero.
+        H_v1 = np.eye(n, dtype=np.float64) 
+    
+    else:
+        v_aux = v_aux / denom
+        
+        v_aux_col = np.array([[ui] for ui in v_aux], dtype=np.float64)
+        v_aux_row = np.array([v_aux], dtype=np.float64)
+        vvT = multiplicar_matrices(v_aux_col, v_aux_row)
+        
+        # vvT = multiplicar_matrices(traspuesta(v_aux), v_aux) 
+        H_v1 = np.eye(n, dtype=np.float64) - 2.0 * vvT
+    
+    if (n == 2) : 
+        S = H_v1 
+        D = multiplicar_matrices(H_v1, multiplicar_matrices(A, traspuesta(H_v1))) 
+        return S, D 
+        
+    else : 
+        B = multiplicar_matrices(H_v1, multiplicar_matrices(A, traspuesta(H_v1))) 
+        A_tilde = B[1:,1:] 
+        
+        S_tilde, D_tilde = diagRH(A_tilde, tol, K) 
+        
+        D = np.eye(n, dtype = np.float64) 
+        D[0,0] = l1 
+        D[1:, 1:] = D_tilde 
+        
+        S_Aux = np.eye(n, dtype = np.float64) 
+        S_Aux[1:, 1:] = S_tilde
+        S = multiplicar_matrices(H_v1, S_Aux) 
+        
+        return S, D 
 
 
 # %% 
@@ -113,8 +170,41 @@ for i in range(100):
 assert exitos > 95
 
 
-
 print("Todos los test de 'metpot2k()' pasados correctamente.") 
+
+
+# %% 
+
+# Test -> 'diagRH()' 
+
+D = np.diag([1,0.5,0.25])
+S = np.vstack([
+    np.array([1,-1,1])/np.sqrt(3),
+    np.array([1,1,0])/np.sqrt(2),
+    np.array([1,-1,-2])/np.sqrt(6)
+              ]).T
+
+A = S@D@S.T
+SRH,DRH = diagRH(A,tol=1e-15,K=1e5)
+assert np.allclose(D,DRH)
+assert np.allclose(np.abs(S.T@SRH),np.eye(A.shape[0]),atol=1e-7)
+
+
+
+# Pedimos que pase el 95% de los casos
+exitos = 0
+for i in range(100):
+    A = np.random.random((5,5))
+    A = 0.5*(A+A.T)
+    S,D = diagRH(A,tol=1e-15,K=1e5)
+    ARH = S@D@S.T
+    e = normaExacta(ARH-A,p='inf')
+    if e < 1e-5: 
+        exitos += 1
+assert exitos >= 95
+
+
+print("Todos los test de 'diagRH()' pasados correctamente.")
 
 
 # %% 

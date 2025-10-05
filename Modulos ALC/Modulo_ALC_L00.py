@@ -181,24 +181,28 @@ print(traza(matriz_test2))
 # %% 
 # Ejercicio 6.
 
-def traspuesta(matriz: np.ndarray) -> np.ndarray :
-    
-    # Si es un arreglo 1D, lo tratamos como (1, n).
-    if (len(np.shape(matriz)) == 1) :
-        n = np.shape(matriz)[0]
-        
-        # Convertir [1,2,3] -> [[1],[2],[3]]
-        return np.array([[matriz[i]] for i in range(n)])
-    
-    # Caso general: matriz 2D.
-    filas, columnas = np.shape(matriz)
-    res = [[0 for _ in range(filas)] for _ in range(columnas)]
+def traspuesta(matriz: np.ndarray) -> np.ndarray:
 
+    matriz = np.array(matriz, dtype=np.float64)
+
+    # Caso 1: vector 1D → lo tratamos como (1, n).
+    if (matriz.ndim == 1) :
+        n = matriz.shape[0]
+        return np.array([[matriz[i] for i in range(n)]], dtype=np.float64)
+
+    # Caso 2: vector columna (n x 1) → pasa a (1, n).
+    if ((matriz.ndim == 2) and (matriz.shape[1] == 1)) :
+        n = matriz.shape[0]
+        return np.array([[matriz[i, 0] for i in range(n)]], dtype=np.float64)
+
+    # Caso general: estandar de matriz 2D.
+    filas, columnas = matriz.shape
+    res = np.zeros((columnas, filas), dtype=np.float64)
+    
     for i in range(filas):
         for j in range(columnas):
-            res[j][i] = matriz[i][j]
-
-    return np.array(res)
+            res[j, i] = matriz[i, j]
+    return res
 
 # Test.
 print(traspuesta(matriz_test1))
