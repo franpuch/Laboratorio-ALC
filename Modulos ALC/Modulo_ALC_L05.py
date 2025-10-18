@@ -10,8 +10,7 @@ Funciones del Módulo ALC.
 # Librerias y Herramientas.
 
 import numpy as np 
-from Modulo_ALC import traspuesta, norma, esCuadrada 
-from Funciones_Varias import multiplicar_matrices, producto_interno
+from Modulo_ALC import traspuesta, norma, esCuadrada, multiplicar_matrices, producto_interno
 
 
 # %% 
