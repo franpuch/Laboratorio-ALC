@@ -9,6 +9,7 @@ Funciones del Módulo ALC.
 # Librerias y Herramientas.
 
 import numpy as np 
+from Modulo_ALC import calcularAx
 
 
 # %% 
@@ -135,7 +136,7 @@ def trans_afin(v, theta:float, s, b) -> np.ndarray :
     m_afin:np.ndarray = afin(theta, s, b) 
     v_extendido:np.ndarray = np.array([v[0], v[1], 1.0])
     
-    res_aux:np.ndarray = m_afin @ v_extendido
+    res_aux:np.ndarray = calcularAx(m_afin, v_extendido, vector_fila=True) 
     res:np.ndarray = np.array([res_aux[0], res_aux[1]])
     
     return res 

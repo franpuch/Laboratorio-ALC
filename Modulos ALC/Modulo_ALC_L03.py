@@ -10,6 +10,7 @@ Funciones del Módulo ALC.
 # Librerias y Herramientas.
 
 import numpy as np 
+from Modulo_ALC import calcularAx 
 
 
 # %% 
@@ -69,7 +70,8 @@ def normaMatMC(A:np.ndarray, q:int, p:int, Np:np.ndarray) -> tuple[float, np.nda
     for elemento in x :
         
         # Calculo la norma del vector que esta trabajando actualmente.
-        norma_actual = norma(A @ (elemento.T), q)
+        # norma_actual = norma(A @ (elemento.T), q)
+        norma_actual = norma(calcularAx(A, elemento), q)
         
         if (res <= norma_actual) :   # Si encontré un vector con norma mayor al que tenía taggeado como mayor antes.
             res = norma_actual

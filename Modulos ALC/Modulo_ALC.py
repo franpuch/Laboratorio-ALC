@@ -36,11 +36,64 @@ Funciones:
     - Labo 03 -> condMC() 
     - Labo 03 -> condExacto() 
     
-    - Labo 04 -> 
+    - Labo 04 -> calculaLU() 
+    - Labo 04 -> res_tri() 
+    - Labo 04 -> inversa() 
+    - Labo 04 -> calculaLDV() 
+    - Labo 04 -> esSDP() 
+    
+    - Labo 05 -> QR_con_GS() 
+    - Labo 05 -> QR_con_HH() 
+    - Labo 05 -> calculaQR() 
+    
+    - Labo 06 -> metpot2k() 
+    - Labo 06 -> diagRH()
     
 """
 
 import numpy as np 
+
+
+# ----------------------------------- Funciones Extras ------------------------------------------------------ #
+
+def multiplicar_matrices(A:np.ndarray, B:np.ndarray) -> np.ndarray :
+    
+    # Parseo a arrays de numpy con dtype float64 (por las dudas que venga en otro formato).
+    A = np.array(A, dtype=np.float64)
+    B = np.array(B, dtype=np.float64) 
+    
+    filas_A, cols_A = A.shape
+    filas_B, cols_B = B.shape
+    
+    # Verifico compatibilidad.
+    if (cols_A != filas_B) :
+        raise ValueError("Las dimensiones de las matrices no son compatibles para la multiplicación.")
+    
+    C = np.zeros((filas_A, cols_B), dtype=np.float64)
+    
+    for i in range(0, filas_A) :
+        for j in range(0, cols_B) :
+            suma:float = np.float64(0.0) 
+            for k in range(0, cols_A) :
+                suma += A[i, k] * B[k, j]
+            C[i, j] = suma 
+    
+    return C 
+
+
+def producto_interno(x1:np.ndarray, x2:np.ndarray) -> float : 
+    
+    if (len(x1) != len(x2)) : 
+        raise ValueError("Las dimensiones de los vectores no son compatibles para el producto inetrno (no son iguales).")
+    
+    long_vectores:int = len(x1) 
+    
+    res:float = 0 
+    
+    for i in range(0, long_vectores) : 
+        res += x1[i] * x2[i] 
+        
+    return res 
 
 
 # ----------------------------------- Laboratorio 00 -------------------------------------------------------- #
@@ -118,12 +171,12 @@ def traspuesta(matriz: np.ndarray) -> np.ndarray:
 
     matriz = np.array(matriz, dtype=np.float64)
 
-    # Caso 1: vector 1D → lo tratamos como (1, n).
+    # Caso 1: vector 1D -> lo tratamos como (1, n).
     if (matriz.ndim == 1) :
         n = matriz.shape[0]
         return np.array([[matriz[i] for i in range(n)]], dtype=np.float64)
 
-    # Caso 2: vector columna (n x 1) → pasa a (1, n).
+    # Caso 2: vector columna (n x 1) -> pasa a (1, n).
     if ((matriz.ndim == 2) and (matriz.shape[1] == 1)) :
         n = matriz.shape[0]
         return np.array([[matriz[i, 0] for i in range(n)]], dtype=np.float64)
@@ -184,6 +237,8 @@ def calcularAx(matriz_A:np.ndarray , matriz_x:np.ndarray, vector_fila:bool = Fal
         
         res[i, 0] = res_parcial 
         
+    # Fran del Futuro añade esta nueva opción que retorna el resultado en forma de vector fila (porque en el futuro no me sirve
+    # que esta función me devuelva el resultado como vector columna).
     if (vector_fila == True) :
         res = np.array([res[i][0] for i in range(len(res))], dtype=np.float64) if len(np.shape(res))==2 else np.array([res[i] for i in range(len(res))], dtype=np.float64)
     
@@ -270,8 +325,8 @@ def matriz_Fibonacci(n:int) -> np.ndarray :
     res:np.ndarray = np.array([[0 for _ in range(0, n)] for _ in range(0, n)]) 
     
     fib:list[int] = [0, 1]
-    for contador in range(2, 2 * n) : 
-        fib.append(fib[-1] + fib[-2]) 
+    for contador in range(2, 2 * n) :   # Empiezo en 2 el ciclo porque los primeros 2 fibonaccis ya los tengo.
+        fib.append(fib[-1] + fib[-2])   # Aprovecho que Python entiende los índices negativos como empezar desde el final.
     
     for fila in range(0, n) :
         for columna in range(0, n) :
@@ -296,6 +351,7 @@ def row_echelon_stable(matriz:np.ndarray) -> np.ndarray :
     
     for fila in range(0, nro_filas) :
         
+        # Verifico si es la de mayor pivot. 
         max_fila:int = fila 
         max_valor:float = abs(matriz[fila][fila]) 
         for i in range(fila, nro_filas) :
@@ -303,9 +359,11 @@ def row_echelon_stable(matriz:np.ndarray) -> np.ndarray :
                 max_fila = i 
                 max_valor = abs(matriz[i][fila]) 
         
+        # Hago el swap de filas (si es necesario).
         if (max_fila != fila) :
             intercambiarFilas(matriz, fila, max_fila) 
             
+        # Hago Eliminación Gaussiana para esa columna.
         for columna in range(fila + 1, nro_filas) :
             if (matriz[columna][fila] != 0) :
                 factor:float = matriz[columna][fila] / matriz[fila][fila] 
@@ -334,6 +392,12 @@ def error_relativo(x, y):
     
     return np.abs(x - y) / np.abs(x) 
 
+
+'''
+Por lo que ví, la forma mas "correcta" de usar la función "matricesIguales" es ajustando la tolerancia en función del tamaño 
+de los numeros (que se estan comparando). Esto se puede hacer multiplicando el Epsilon de Maquina por el modulo del 
+comparando mas grande. Si los numeros son muy pequeños, me quedo con el Epsilon de Maquina.
+'''
 
 def matricesIguales(A, B, tol = None) :
     
@@ -380,6 +444,12 @@ def escala(s) -> np.ndarray :
     return res 
 
 
+'''
+Lo que busco es una composición de transformaciones lineales: f(g(v)) donde 'g()' es la 'TL rotación' y 'f()' es la 
+'TL escalado'. Como vengo trabajando con matrices (de las TLs), la composición es la multiplicacion de las 
+respectivas matrices. 
+'''
+
 def rota_y_escala(theta:float, s) -> np.ndarray : 
     
     matriz_escala:np.ndarray = escala(s) 
@@ -413,7 +483,7 @@ def trans_afin(v, theta:float, s, b) -> np.ndarray :
     m_afin:np.ndarray = afin(theta, s, b) 
     v_extendido:np.ndarray = np.array([v[0], v[1], 1.0])
     
-    res_aux:np.ndarray = m_afin @ v_extendido 
+    res_aux:np.ndarray = calcularAx(m_afin, v_extendido, vector_fila=True) 
     res:np.ndarray = np.array([res_aux[0], res_aux[1]])
     
     return res 
@@ -468,7 +538,7 @@ def normaMatMC(A:np.ndarray, q:int, p:int, Np:np.ndarray) -> tuple[float, np.nda
     
     for elemento in x :
         
-        norma_actual = norma(A @ (elemento.T), q)
+        norma_actual = norma(calcularAx(A, elemento), q) 
         
         if (res <= norma_actual) : 
             res = norma_actual
@@ -543,7 +613,376 @@ def condExacta(A:np.ndarray, p:int | str) -> float | None :
 
 # ----------------------------------- Laboratorio 04 -------------------------------------------------------- # 
 
+def calculaLU(A:np.ndarray) :
+    
+    A = np.array(A, dtype = np.float64)
+    filas = A.shape[0]
+    
+    # Inicializamos L como identidad, U como copia de A.
+    L = np.eye(filas, dtype = np.float64)
+    U = A.copy().astype(np.float64)
+    nops = 0
+    
+    for k in range(0, filas-1) :
+        if abs(U[k, k]) == 0 :  # Pivote cero => no factorizable.
+            return None, None, 0
+        
+        for i in range(k+1, filas) :
+            L[i, k] = U[i, k] / U[k, k] 
+            nops += 1  # División.
+            
+            for j in range(k, filas) :
+                U[i, j] = U[i, j] - L[i, k] * U[k, j] 
+                
+                if (i != j) : 
+                    nops += 2  # Multiplicación + Resta
+    
+    return L, U, nops 
+
+
+def res_tri(L:np.ndarray, b:np.ndarray, inferior:bool = True) : 
+    
+    L = np.array(L, dtype = np.float64) 
+    b = np.array(b, dtype = np.float64) 
+    filas = L.shape[0] 
+    res = np.zeros(filas, dtype = np.float64) 
+    
+    if (inferior) :
+        for i in range(0, filas) :
+            suma = 0.0
+            
+            for j in range(0, i):
+                suma += L[i, j] * res[j]
+            res[i] = (b[i] - suma) / L[i, i] 
+    
+    else :
+        for i in reversed(range(0, filas)) :
+            suma = 0.0
+            
+            for j in range(i + 1, filas) :
+                suma += L[i, j] * res[j] 
+                
+            res[i] = (b[i] - suma) / L[i, i]
+    
+    return res 
+
+
+def inversa(A:np.ndarray) : 
+    
+    A = np.array(A, dtype = np.float64)
+    filas = A.shape[0]
+    
+    L, U, nops = calculaLU(A) 
+    
+    if ((L is None) or (U[filas - 1, filas - 1] == 0)) : 
+        print("La matriz es Singular, no tiene Inversa.")
+        return None 
+    
+    identidad:np.ndarray = np.eye(filas, dtype = np.float64)
+    res = np.zeros((filas, filas), dtype = np.float64)
+    
+    for i in range(0, filas) :
+        e = identidad[:, i]   # Tomo la columna 'i'.
+        
+        y = res_tri(L, e)   # L es Triengular Inferior.
+        x = res_tri(U, y, inferior = False)   # U es Triangular Superior.
+        
+        res[:, i] = x   # Reemplazo la columna de 'res' por el vector columna que obtuve de resolver los sistemas triagulares.
+    
+    return res 
+
+
+def calculaLDV(A:np.ndarray) :
+    
+    A = np.array(A, dtype = np.float64)
+    filas = A.shape[0]
+
+    # Factorizo A = L U
+    L, U, nops = calculaLU(A)
+    
+    if ((L is None) or (U is None)) :
+        return None, None, None, 0
+
+    # D = diagonal con los pivotes de U.
+    D = np.zeros((filas, filas), dtype = np.float64)
+    for i in range(0, filas) :
+        D[i, i] = U[i, i]
+
+    # V = U normalizado (cada fila dividida por su pivote).
+    V = np.zeros_like(U, dtype = np.float64)
+    for i in range(filas):
+        if (abs(D[i, i]) == 0) :  # Pivote Nulo -> No Factorizable. 
+            return None, None, None, 0
+        V[i, :] = U[i, :] / D[i, i]
+
+    return L, D, V, nops 
+
+
+def esSDP(A:np.ndarray, atol:float = 1e-8) -> bool : 
+    
+    A = np.array(A, dtype = np.float64)
+
+    # Chequeo simetría.
+    if (not esSimetrica(A)) :
+        print("La matriz de entrada no es simétrica.")
+        return False
+
+    # Hago la Factorización LDV.
+    L, D, V, nops = calculaLDV(A)
+    if ((L is None) or (D is None) or (V is None)) : 
+        print("La matriz de entrada no tiene descomposición A = L D V.")
+        return False
+
+    # Reviso que los elementos de la diagonal de D sean positivos.
+    for i in range(0, D.shape[0]) :
+        if (D[i, i] <= atol) :
+            print("La matriz de entrada NO es Simétrica Definida Positiva.")
+            return False
+
+    return True
+
+
 # ----------------------------------- Laboratorio 05 -------------------------------------------------------- #
+
+def QR_con_GS(A:np.ndarray, tol:float = 1e-12, retorna_nops:bool = False) :
+    
+    # A debe ser cuadrada.
+    if (not esCuadrada(A)) :
+        return None
+
+    A = np.array(A, dtype=np.float64)
+    n:int = A.shape[0]
+    Q:np.ndarray = np.zeros((n, n), dtype=np.float64)
+    R:np.ndarray = np.zeros((n, n), dtype=np.float64)
+
+    nops:int = 0  # Contador de operaciones.
+
+    for j in range(0, n) :
+        
+        v:np.ndarray = np.copy(A[:, j])  # Columna j.
+
+        for i in range(0, j) :
+            qi = Q[:, i]
+            
+            r_ij = producto_interno(qi, v) 
+            R[i, j] = r_ij
+            v = v - r_ij * qi
+            
+            # Contamos Operaciones: producto interno ('n' multiplicaciones + 'n - 1' sumas), escala y resta.
+            nops += (2 * n - 1) + n + n
+
+        r_jj = norma(v, 2)
+        
+        if (r_jj > tol) :
+            
+            Q[:, j] = v / r_jj
+            R[j, j] = r_jj
+            
+            # Contamos las operaciones de la normalización: 'n' multiplicaciones + 'n' divisiones.
+            nops += n + n
+            
+        else :
+            
+            Q[:, j] = 0.0
+            R[j, j] = 0.0
+
+    if (retorna_nops) :
+        return Q, R, nops
+    
+    return Q, R 
+
+
+def QR_con_HH(A:np.ndarray, tol:float = 1e-12) :
+    
+    A = np.array(A, dtype=np.float64)
+    m, n = A.shape
+    
+    if (m < n) :
+        return None
+
+    R = np.copy(A)
+    Q = np.eye(m, dtype=np.float64)
+
+    for k in range(0, n) :
+        
+        x = R[k:, k].copy()
+        norm_x = norma(x, 2)
+        
+        if (norm_x < tol) :
+            continue
+
+        # Atajo el caso cuando x[0] == 0 (la función 'np.sign()' devuelve 0 y no quiero eso porque me cancela todo).
+        if (abs(x[0]) < tol) :
+            alpha = -norm_x
+        else:
+            alpha = -np.sign(x[0]) * norm_x
+        
+        # Armo el canónico.
+        e1 = np.zeros_like(x)
+        e1[0] = 1.0
+        
+        # Ahora construyo 'u'
+        u = x - alpha * e1
+        norm_u = norma(u, 2) 
+        
+        if (norm_u < tol) :
+            continue
+        
+        u = u / norm_u
+
+        # Hk = I - 2 u u^T
+        u_col = np.array([[ui] for ui in u], dtype=np.float64)
+        u_row = np.array([u], dtype=np.float64)
+        uuT = multiplicar_matrices(u_col, u_row)
+        Hk = np.eye(len(u), dtype=np.float64) - 2.0 * uuT
+        
+        # Es este último bloque (de arriba) no puedo utilizar 'multiplicar_matrices()' de una, porque le voy a estar pasando 
+        # dos vectores (que para numpy tienen dimensión 1). Entonces, al desempaquetar en dos variables 'np.shape()' (esto es 
+        # una parte clave de 'multiplicar_matrices()') se rompe porque numpy interpreta los vectores como de dimensión 1. 
+        # Para evitar este problema, fuerzo las dimensiones construyendo las matrices a mano.
+
+        # Extiendo a H̃k en dimensión 'm' y le enchufo Hk donde corresponde.
+        H_tilde = np.eye(m)
+        H_tilde[k:, k:] = Hk
+
+        # Actualizo R y Q.
+        R = multiplicar_matrices(H_tilde, R)
+        Q = multiplicar_matrices(Q, traspuesta(H_tilde))
+
+    # Para ser consistente con los test (y evitar dolores de cabeza), "limpio" la parte nula de la matriz.
+    # La idea es que no me queden residuos de números muy pequeños QUE NO SON CERO (pero que los tomamos como tal por lo 
+    # pequeño que son).
+    R[np.abs(R) < tol] = 0.0
+
+    return Q, R 
+
+
+def calculaQR(A:np.ndarray, metodo:str = 'RH', tol:float = 1e-12, retorna_nops:bool = False) :
+    
+    if (not esCuadrada(A)) :
+        return None
+
+    if (metodo == 'GS') :
+        return QR_con_GS(A, tol = tol, retorna_nops = retorna_nops)
+    
+    elif (metodo == 'RH') :
+        return QR_con_HH(A, tol = tol)
+    
+    else :
+        return None
+
+
+# ----------------------------------- Laboratorio 06 -------------------------------------------------------- # 
+
+def metpot2k(A:np.ndarray, tol:float = 1e-15, K:int = 1000) : 
+    
+    filas, columnas = np.shape(A) 
+    
+    # Checkeo que la matriz sea cuadrada.
+    if (filas != columnas) : 
+        return None 
+    
+    # Genero un vector aleatorio (proveniente de una distribución normal).
+    v:np.ndarray = np.random.rand(filas).astype(np.float64)
+    norma_v:float = norma(v, 2)
+    
+    # Atajo el caso de que la norma del vector aleatorio sea 0 (más adelante no quiero dividir por cero).
+    if (norma_v < tol) :
+        v = np.ones(filas, dtype=np.float64)
+    else:
+        v = v / norma_v
+    
+    # Definición de fA función auxiliar.
+    def fA(A_local:np.ndarray, vector:np.ndarray) : 
+        
+        Av = calcularAx(A_local, vector, vector_fila = True)
+        
+        norma_Av = norma(Av, 2)
+        if (norma_Av < tol) :
+            return np.zeros_like(Av)
+        
+        return (Av / norma_Av) 
+    
+    # Aplico dos veces la matriz A (la transformación 'f') al vector 'v'.
+    v_tilde:np.ndarray = fA(A, fA(A, v)) 
+    
+    # Acá me dicen que haga 'transpuesto(v_virulete) * v', es lo mismo que hacer producto interno entre ambos. 
+    e:float = producto_interno(v_tilde, v) 
+    
+    iteraciones:int = 0 
+    
+    while ((abs(e - 1) > tol) and (iteraciones < K)) : 
+        v = v_tilde 
+        v_tilde = fA(A, fA(A, v)) 
+        e = producto_interno(v_tilde, v) 
+        iteraciones += 1 
+    
+    Av_tilde:np.ndarray = calcularAx(A, v_tilde, vector_fila = True) 
+    
+    autovalor:float = producto_interno(v_tilde, Av_tilde) 
+    
+    return v_tilde, autovalor, iteraciones 
+
+
+def diagRH(A:np.ndarray, tol:float = 1e-15, K:int = 1000) :
+
+    A = np.array(A, dtype = np.float64)
+
+    # Verificación de simetría (numérica, no exacta).
+    if (not matricesIguales(A, traspuesta(A), tol)) :
+        return None, None
+
+    n = A.shape[0]
+
+    # Caso Base 1.
+    if (n == 1) :
+        return np.array([[1.0]], dtype = np.float64), np.array([[A[0, 0]]], dtype = np.float64)
+
+    # Primer Autovector y Autovalor usando método de la potencia.
+    v1, l1, _ = metpot2k(A, tol, K)
+
+    # Construyo el reflector de Householder.
+    e1 = np.zeros(n, dtype = np.float64)
+    e1[0] = 1.0
+    u = e1 - v1
+
+    denom = producto_interno(u, u)
+    if (denom < tol) :   # No queremos dividir por cero.
+        H_v1 = np.eye(n, dtype = np.float64) 
+        
+    else:
+        # H = I - 2 * (u u^T) / (u^T u)
+        u_col = np.array([[ui] for ui in u], dtype = np.float64)
+        u_row = np.array([u], dtype = np.float64)
+        uuT = multiplicar_matrices(u_col, u_row)
+        vvT = uuT / denom 
+        H_v1 = np.eye(n, dtype = np.float64) - 2.0 * vvT
+
+    # Transformación intermedia B = H · A · H^T
+    B = multiplicar_matrices(H_v1, multiplicar_matrices(A, traspuesta(H_v1)))
+    B[np.abs(B) < tol] = 0.0  # Si me quedaron números que (por la tolerancia) los consideramos cero, los limpio a cero. 
+
+    # Caso base 2.
+    if (n == 2) :
+        S = H_v1
+        D = B
+        return S, D
+
+    # Paso recursivo.
+    A_tilde = B[1:, 1:]
+    S_tilde, D_tilde = diagRH(A_tilde, tol, K)
+
+    # Construcción de D.
+    D = np.eye(n, dtype = np.float64)
+    D[0, 0] = l1
+    D[1:, 1:] = D_tilde
+
+    # Construcción de S.
+    S_Aux = np.eye(n, dtype = np.float64)
+    S_Aux[1:, 1:] = S_tilde
+    S = multiplicar_matrices(H_v1, S_Aux)
+
+    return S, D 
 
 
 # Fin. 
