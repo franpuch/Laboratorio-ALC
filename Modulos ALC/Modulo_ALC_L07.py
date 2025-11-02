@@ -89,7 +89,7 @@ def nucleo(A:np.ndarray, tol:float = 1e-15) -> np.ndarray :
         return res 
 
 
-def crea_rala(listado:list[list[float]], m_filas:int, n_columnas:int, tol:float = 1e-15) -> list[dict[int, tuple[int, float]], tuple[int, int]] : 
+def crea_rala(listado:list[list[float]], m_filas:int, n_columnas:int, tol:float = 1e-15) -> list[dict[tuple[int, int], float], tuple[int, int]] : 
     
     dict_res:dict[int, tuple[int, float]] = {} 
     
@@ -115,9 +115,16 @@ def crea_rala(listado:list[list[float]], m_filas:int, n_columnas:int, tol:float 
     return [dict_res, dim] 
 
 
-''' 
-Falta implementar 'multiplicar_rala_vector(A, v)'
-'''
+def multiplica_rala_vector(A:list[dict[tuple[int, int], float], tuple[int, int]], v:np.ndarray) -> np.ndarray : 
+    
+    matriz, (filas, columnas) = A
+    res = np.zeros(filas, dtype = np.float64)
+    
+    # Recorro únicamente las posiciones no nulas.
+    for (i, j), valor in matriz.items() :
+        res[i] += valor * v[j]
+    
+    return res
 
 
 # %% 
@@ -258,6 +265,35 @@ assert len(A_rala_dict) == 0, "crea_rala fallo en cantidad de elementos con list
 
 
 print("Todos los test de 'crea_rala()' pasados correctamente. \n") 
+
+
+# %% 
+
+# Test -> 'multiplicar_rala_vector()' 
+
+listado = [[0,1,2],[0,1,2],[1,2,3]]
+A_rala = crea_rala(listado,3,3)
+v = np.random.random(3)
+v = v / np.linalg.norm(v)
+res = multiplica_rala_vector(A_rala,v)
+A = np.array([[1,0,0],[0,2,0],[0,0,3]])
+res_esperado = A @ v
+assert np.allclose(res,res_esperado), "multiplica_rala_vector fallo"
+
+A = np.random.random((5,5))
+A = A * (A > 0.5) 
+listado = [[],[],[]]
+for i in range(5):
+    for j in range(5):
+        listado[0].append(i)
+        listado[1].append(j)
+        listado[2].append(A[i,j])
+        
+A_rala = crea_rala(listado,5,5)
+v = np.random.random(5)
+assert np.allclose(multiplica_rala_vector(A_rala,v), A @ v)
+
+print("Todos los test de 'multiplicar_rala_vector()' pasados correctamente. \n") 
 
 
 # %% 
