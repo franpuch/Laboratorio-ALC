@@ -53,7 +53,7 @@ Funciones:
     - Labo 07 -> transiciones_al_azar_uniforme() 
     - Labo 07 -> nucleo() 
     - Labo 07 -> crea_rala() 
-    - Labo 07 -> multiplica_rala_vector() -----> FALTA AÑADIR. 
+    - Labo 07 -> multiplica_rala_vector() 
     
 """
 
@@ -1091,6 +1091,21 @@ def crea_rala(listado:list[list[float]], m_filas:int, n_columnas:int, tol:float 
     dim:tuple[int, int] = (m_filas, n_columnas) 
     
     return [dict_res, dim] 
+
+
+def multiplica_rala_vector(A:list[dict[tuple[int, int], float], tuple[int, int]], v:np.ndarray) -> np.ndarray : 
+    
+    matriz, (filas, columnas) = A
+    res = np.zeros(filas, dtype = np.float64)
+    
+    # Recorro únicamente las posiciones no nulas.
+    for (i, j), valor in matriz.items() :
+        res[i] += valor * v[j]
+    
+    return res 
+
+
+# ----------------------------------- Laboratorio 08 -------------------------------------------------------- # 
 
 
 # Fin. 
