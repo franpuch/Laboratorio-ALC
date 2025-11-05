@@ -88,7 +88,6 @@ def svd_reducida(A:np.ndarray, k = "max", tol:float = 1e-15) :
             
         else : 
             
-            # U[:, index] = multiplicar_matrices(A, V[:, index]) / valores_singulares[index]
             U[:, index] = calcularAx(A, V[:, index], vector_fila = True) / valores_singulares[index]
             
     U = normaliza_columnas(U, 2)   # Normalizamos (para que quede unitaria). 
@@ -100,60 +99,6 @@ def svd_reducida(A:np.ndarray, k = "max", tol:float = 1e-15) :
     else:
         
         return U, valores_singulares, V
-
-
-# %% 
-
-# Última versión alternativa que estuve probando probar -> De todas formas, sigue sin pasar los test.
-
-def svd_reducida_2(A: np.ndarray, k="max", tol: float = 1e-15) : 
-    
-    A = np.array(A, dtype=np.float64)
-    m, n = A.shape
-    A_orig = np.copy(A) 
-
-    if k == "max":
-        k = min(m, n) 
-
-    if m >= n:
-        # Caso ALTO: A (m×n), m>=n
-        B = multiplicar_matrices(traspuesta(A), A)  # n×n
-        V, D = diagRH(B, tol)
-
-        # Valores singulares
-        sigma = np.sqrt(np.max(np.diag(D)[:k], 0))
-        sigma = sigma[sigma > tol]
-        k = len(sigma)
-
-        V = V[:, :k]
-        V = normaliza_columnas(V, 2)
-
-        U = np.zeros((m, k), dtype=np.float64)
-        for i in range(k):
-            U[:, i] = calcularAx(A, V[:, i], vector_fila=True) / sigma[i]
-        U = normaliza_columnas(U, 2)
-
-        return U, sigma, V
-
-    else:
-        # Caso ANCHO: A (m×n), m<n  -> trabajamos con A^T
-        A_T = traspuesta(A)
-        B = multiplicar_matrices(traspuesta(A_T), A_T)  # m×m
-        U, D = diagRH(B, tol)
-
-        sigma = np.sqrt(np.maximum(np.diag(D)[:k], 0))
-        sigma = sigma[sigma > tol]
-        k = len(sigma)
-
-        U = U[:, :k]
-        U = normaliza_columnas(U, 2)
-
-        V = np.zeros((n, k), dtype=np.float64)
-        for i in range(k):
-            V[:, i] = calcularAx(traspuesta(A_orig), U[:, i], vector_fila=True) / sigma[i]
-        V = normaliza_columnas(V, 2)
-
-        return U, sigma, V
     
 
 # %%

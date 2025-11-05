@@ -55,6 +55,8 @@ Funciones:
     - Labo 07 -> crea_rala() 
     - Labo 07 -> multiplica_rala_vector() 
     
+    - Labo 08 -> svd_reducida() 
+    
 """
 
 import numpy as np 
@@ -100,6 +102,33 @@ def producto_interno(x1:np.ndarray, x2:np.ndarray) -> float :
         res += x1[i] * x2[i] 
         
     return res 
+
+
+''' 
+Recibe una matriz y retorna la matriz con sus columnas normalizadas.
+'''
+def normaliza_columnas(matriz:np.ndarray, p:int, tol:float = 1e-15) -> np.ndarray : 
+    
+    matriz = np.array(matriz, dtype = np.float64)
+    filas, columnas = matriz.shape
+    res:list[list[float]] = [] 
+    
+    for i in range(0, columnas) :
+        
+        columna_actual = matriz[:,i] 
+        norma_columna = norma(columna_actual, p) 
+        
+        if (norma_columna <= tol) : 
+            
+            columna_actual = np.zeros(filas, dtype = np.float64) 
+            
+        else : 
+        
+            columna_actual = columna_actual / norma_columna
+            
+        res.append(columna_actual) 
+        
+    return traspuesta(np.array(res, dtype = np.float64)) 
 
 
 # ----------------------------------- Laboratorio 00 -------------------------------------------------------- #
@@ -935,7 +964,7 @@ def diagRH(A:np.ndarray, tol:float = 1e-15, K:int = 1000) :
     A = np.array(A, dtype = np.float64)
 
     # Verificación de simetría (numérica, no exacta).
-    if (not matricesIguales(A, traspuesta(A), tol)) :
+    if (not matricesIguales(A, traspuesta(A), tol = 1e-10)) :
         return None, None
 
     n = A.shape[0]
@@ -1106,6 +1135,64 @@ def multiplica_rala_vector(A:list[dict[tuple[int, int], float], tuple[int, int]]
 
 
 # ----------------------------------- Laboratorio 08 -------------------------------------------------------- # 
+
+def svd_reducida(A:np.ndarray, k = "max", tol:float = 1e-15) : 
+    
+    A = np.array(A, dtype = np.float64)
+    filas, columnas = A.shape
+    
+    trans = False
+    if (filas < columnas) :
+        A = traspuesta(A)
+        trans = True
+        filas, columnas = A.shape   # Actualizo las variables de dimension. 
+        
+    B = multiplicar_matrices(traspuesta(A), A)
+    
+    V, D = diagRH(B, tol)
+    
+    valores_singulares:list[float] = []   # No nulos.
+
+    if (k == "max") :
+        k = len(D)
+   
+    cantidad_autovalores:int = 0
+    
+    for i in range(0, k) :
+        
+        if (D[i, i] <= tol) :
+            break
+           
+        cantidad_autovalores += 1
+        valores_singulares.append(np.sqrt(D[i, i]))
+
+    k = min(k, cantidad_autovalores)
+    valores_singulares = np.array(valores_singulares, dtype = np.float64) 
+    
+    V = V[:, :k]   # Nos quedamos con los primeros 'k' autovectores.
+    V = normaliza_columnas(V, 2)   # Normalizamos las columnas (para que quede unitaria). 
+    
+    U = np.zeros((filas, k), dtype = np.float64) 
+    
+    for index in range(0, k) : 
+        
+        if (valores_singulares[index] <= tol) :
+            
+            U[:, index] = 0
+            
+        else : 
+            
+            U[:, index] = calcularAx(A, V[:, index], vector_fila = True) / valores_singulares[index]
+            
+    U = normaliza_columnas(U, 2)   # Normalizamos (para que quede unitaria). 
+    
+    if (trans) :
+        
+        return V, valores_singulares, U
+    
+    else:
+        
+        return U, valores_singulares, V
 
 
 # Fin. 
