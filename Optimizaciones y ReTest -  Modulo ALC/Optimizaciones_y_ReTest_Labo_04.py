@@ -11,7 +11,7 @@ Funciones del Módulo ALC.
 # Librerias y Herramientas.
 
 import numpy as np 
-from Modulo_ALC_Labo_00 import esSimetrica 
+from Optimizaciones_Labo_00 import esSimetrica 
 
 
 # %% 

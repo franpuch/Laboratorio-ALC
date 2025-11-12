@@ -30,8 +30,8 @@ def rota(theta:float) -> np.ndarray :
     c:float = np.cos(theta)
     s:float = np.sin(theta) 
     
-    res:np.ndarray = ([[c, -s], 
-                       [s, c]])
+    res:np.ndarray = np.array([[c, -s], 
+                               [s, c]])
     
     return res 
 
